@@ -6,6 +6,7 @@ export const registerSchema = (body: any) =>
       name: z.string().min(3, 'Name must be at least 3 characters long'),
       email: z.string().email('Invalid email'),
       password: z.string().min(6, 'Password must be at least 6 characters long').max(100, 'Password too long'),
+      role: z.enum(['QC', 'ADMIN', 'PACKING']),
     })
     .safeParse(body);
 export type registerType = z.infer<typeof registerSchema>;
@@ -19,10 +20,12 @@ export const loginValidationSchema = (body: any) =>
     .safeParse(body);
 export type loginType = z.infer<typeof loginValidationSchema>;
 
-export const changeRoleSchema = (body: any) =>
+export const updateUserSchema = (body: any) =>
   z
     .object({
-      role: z.enum(['USER', 'ADMIN', 'QA']),
+      name: z.string().min(3, 'Name must be at least 3 characters long'),
+      email: z.string().email('Invalid email'),
+      role: z.enum(['QC', 'ADMIN', 'PACKING']),
     })
     .safeParse(body);
-export type changeRoleType = z.infer<typeof changeRoleSchema>;
+export type updateUserType = z.infer<typeof updateUserSchema>;

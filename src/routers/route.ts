@@ -1,5 +1,5 @@
-import adminController from '../controllers/admin-controller';
-import authController from '../controllers/auth-controller';
+import { getUsers, updateUser, registerUser } from '../controllers/admin-controller';
+import { login, refreshToken, logout } from '../controllers/auth-controller';
 import { isAuth, isRole, verifyRToken } from '../middlewares/auth-middleware';
 
 import { Router } from 'express';
@@ -10,12 +10,12 @@ router.get('/', (_req, res) => {
   res.status(200).json({ success: true, message: 'Api ready!' });
 });
 
-router.post('/register', authController.register);
-router.post('/login', authController.login);
-router.get('/refresh-token', verifyRToken, authController.refreshToken);
-router.delete('/logout', verifyRToken, authController.logout);
+router.post('/login', login);
+router.get('/refresh-token', verifyRToken, refreshToken);
+router.delete('/logout', verifyRToken, logout);
 
-router.get('/users', isAuth, isRole('ADMIN'), adminController.getUsers);
-router.post('/user-role/:id', isAuth, isRole('ADMIN'), adminController.changeRole);
+router.post('/register', isAuth, isRole('ADMIN'), registerUser);
+router.get('/users', isAuth, isRole('ADMIN'), getUsers);
+router.put('/user/:id', isAuth, isRole('ADMIN'), updateUser);
 
 export default router;
