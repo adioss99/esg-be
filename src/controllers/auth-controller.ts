@@ -65,7 +65,7 @@ export const refreshToken = async (req: Request, res: Response) => {
   try {
     const cookies = req.user;
     const user = await prisma.user.findFirst({
-      where: { id: cookies.id, refreshToken: req.cookies.refreshToken },
+      where: { id: cookies.id },
     });
 
     if (!user) return res.status(400).json({ success: false, message: 'Refresh token not found' });
