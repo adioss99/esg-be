@@ -26,7 +26,7 @@ export const login = async (req: Request, res: Response) => {
 
     const isPasswordValid = await comparePassword(password, user.password);
     if (!isPasswordValid) return res.status(400).json({ success: false, message: 'User not found' });
-    
+
     const jwtPayload = { id: user.id, name: user.name, email: user.email, role: user.role };
     const accessToken: string = generateToken(jwtPayload);
     const refreshToken: string = generateRefreshToken(jwtPayload);
@@ -43,7 +43,6 @@ export const login = async (req: Request, res: Response) => {
       .status(200)
       .cookie('refreshToken', refreshToken, {
         httpOnly: true,
-        // domain: 'localhost',
         secure: envi,
         sameSite: 'lax',
         maxAge: (envi ? 2 : 7) * 24 * 60 * 60 * 1000,

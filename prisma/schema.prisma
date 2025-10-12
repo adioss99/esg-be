@@ -14,12 +14,42 @@ datasource db {
 }
 
 model User {
-  id        Int   @id @default(autoincrement())
+  id        Int            @id @default(autoincrement())
   name      String
-  email     String   @unique
+  email     String            @unique
   role      String
   password  String
   refreshToken String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt 
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt 
+  
+  created_orders ProductionOrder[] @relation("CreatedByUser")
+  inspections  QCInspection[]      @relation("InspectorUser")
+}
+
+model ProductionOrder {
+  id             Int         @id @default(autoincrement())
+  referenceNo    String         @unique @db.VarChar(50)
+  modelName      String         @db.VarChar(100)
+  quantity       Int
+  status         String         @db.VarChar(30)
+  createdBy      Int
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  createdByUser  User           @relation("CreatedByUser", fields: [createdBy], references: [id])
+  qcInspections  QCInspection[]
+}
+
+model QCInspection {
+  id             Int          @id @default(autoincrement())
+  productionId   Int
+  inspectorId    Int
+  passed         Boolean
+  notes          String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  production     ProductionOrder @relation(fields: [productionId], references: [id])
+  inspectorUser  User            @relation("InspectorUser", fields: [inspectorId], references: [id])
 }
