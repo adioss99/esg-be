@@ -18,3 +18,11 @@ export const loginValidationSchema = (body: any) =>
     })
     .safeParse(body);
 export type loginType = z.infer<typeof loginValidationSchema>;
+
+export const changeRoleSchema = (body: any) =>
+  z
+    .object({
+      role: z.enum(['USER', 'ADMIN', 'QA']),
+    })
+    .safeParse(body);
+export type changeRoleType = z.infer<typeof changeRoleSchema>;

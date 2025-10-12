@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { userPayLoad, verifyAcessToken, verifyRefreshToken } from '../lib/jwt';
-import { JwtPayload } from 'jsonwebtoken';
+import { verifyAcessToken, verifyRefreshToken } from '../lib/jwt';
+import { UserRole } from '../types/user-type';
 
 declare global {
   namespace Express {
@@ -36,9 +36,16 @@ export const verifyRToken = (req: Request, res: Response, next: NextFunction) =>
   next();
 };
 
-export const isAdmin = (req: Request, res: Response, next: NextFunction) => {
-  if (req.user?.role !== 'ADMIN') {
-    return res.status(403).json({ success: false, message: 'Forbidden' });
-  }
-  next();
-};
+export const isRole =
+  (...allowedRoles: UserRole[]) =>
+  (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    if (!allowedRoles.includes(req.user.role as UserRole)) {
+      return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
+
+    next();
+  };
