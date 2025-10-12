@@ -26,17 +26,10 @@ export const login = async (req: Request, res: Response) => {
 
     const isPasswordValid = await comparePassword(password, user.password);
     if (!isPasswordValid) return res.status(400).json({ success: false, message: 'User not found' });
-
-    const accessToken: string = generateToken({
-      id: user.id,
-      name: user.name,
-      role: user.role,
-    });
-    const refreshToken: string = generateRefreshToken({
-      id: user.id,
-      name: user.name,
-      role: user.role,
-    });
+    
+    const jwtPayload = { id: user.id, name: user.name, email: user.email, role: user.role };
+    const accessToken: string = generateToken(jwtPayload);
+    const refreshToken: string = generateRefreshToken(jwtPayload);
 
     const data = await prisma.user.update({
       where: { id: user.id },
@@ -81,6 +74,7 @@ export const refreshToken = async (req: Request, res: Response) => {
     const accessToken = generateToken({
       id: user.id,
       name: user.name,
+      email: user.email,
       role: user.role,
     });
     res.status(200).json({ success: true, data: { id: user.id, name: user.name, role: user.role }, accessToken });
