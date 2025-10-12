@@ -1,1 +1,1 @@
-export type UserRole = 'ADMIN' | 'QC' | 'PACKING';
+export type UserRole = 'ADMIN' | 'QC' | 'OPERATOR';
