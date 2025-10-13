@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import { registerSchema, updateUserSchema } from '../validators/user-validator';
 import { hashPassword } from '../lib/bcrypt';
+import { validateResponse } from '../utils/response';
 
 export const getUsers = async (_req: Request, res: Response) => {
   try {
@@ -31,18 +32,12 @@ export const getUsers = async (_req: Request, res: Response) => {
 
 export const registerUser = async (req: Request, res: Response) => {
   try {
-    const result = registerSchema(req.body);
-    if (!result.success) {
-      return res.status(400).json({
-        success: false,
-        message: result.error.issues.map((err) => ({
-          path: err.path.join('.'),
-          message: err.message,
-        })),
-      });
+    const val = registerSchema(req.body);
+    if (!val.success) {
+      return validateResponse(res, val);
     }
 
-    const { name, email, password, role } = result.data;
+    const { name, email, password, role } = val.data;
 
     const userExists = await prisma.user.findUnique({ where: { email } });
     if (userExists) {
@@ -77,18 +72,12 @@ export const registerUser = async (req: Request, res: Response) => {
 export const updateUser = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
-    const result = updateUserSchema(req.body);
-    if (!result.success) {
-      return res.status(400).json({
-        success: false,
-        message: result.error.issues.map((err) => ({
-          path: err.path.join('.'),
-          message: err.message,
-        })),
-      });
+    const val = updateUserSchema(req.body);
+    if (!val.success) {
+      return validateResponse(res, val);
     }
 
-    const { name, email, role } = result.data;
+    const { name, email, role } = val.data;
 
     const userExists = await prisma.user.findUnique({ where: { email } });
     if (userExists && userExists.id !== id) {

@@ -2,18 +2,13 @@ import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import { productSchema, productStatusSchema } from '../validators/product-validator';
 import { Prisma } from '@prisma/client';
+import { validateResponse } from '../utils/response';
 
 export const createOrder = async (req: Request, res: Response) => {
   try {
     const val = productSchema(req.body);
     if (!val.success) {
-      return res.status(400).json({
-        success: false,
-        message: val.error.issues.map((err) => ({
-          path: err.path.join('.'),
-          message: err.message,
-        })),
-      });
+      return validateResponse(res, val);
     }
 
     const { modelName, quantity } = val.data;
@@ -30,11 +25,11 @@ export const createOrder = async (req: Request, res: Response) => {
     });
     res.status(201).json({ success: true, data: order });
   } catch (err: any) {
-    res.status(400).json({ success: false, message: err.message });
+    res.status(500).json({ success: false, message: err.message });
   }
 };
 
-export const getOrders = async (_: Request, res: Response) => {
+export const getOrders = async (_req: Request, res: Response) => {
   try {
     const orders = await prisma.productionOrder.findMany({
       include: { createdByUser: { select: { name: true, email: true, role: true } } },
@@ -50,13 +45,7 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
     const { referenceNo } = req.params;
     const val = productStatusSchema(req.body);
     if (!val.success) {
-      return res.status(400).json({
-        success: false,
-        message: val.error.issues.map((err) => ({
-          path: err.path.join('.'),
-          message: err.message,
-        })),
-      });
+      return validateResponse(res, val);
     }
 
     const { status } = val.data;
@@ -74,7 +63,7 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
       });
     }
 
-    res.status(400).json({ success: false, message: err.message });
+    res.status(500).json({ success: false, message: err.message });
   }
 };
 
@@ -90,6 +79,6 @@ export const deleteOrder = async (req: Request, res: Response) => {
         message: 'Invalid reference number',
       });
     }
-    res.status(400).json({ success: false, message: err.message });
+    res.status(500).json({ success: false, message: err.message });
   }
 };

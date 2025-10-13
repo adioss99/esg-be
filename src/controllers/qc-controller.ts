@@ -1,14 +1,22 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import PDFDocument from 'pdfkit';
+import { qcSchema } from '../validators/qc-validator';
+import { validateResponse } from '../utils/response';
+import { Prisma } from '@prisma/client';
+import { generateQCReport } from '../lib/pdf';
 
 export const createQC = async (req: any, res: Response) => {
   try {
-    const { production_id, passed, notes } = req.body;
-
+    const { productionId } = req.params;
+    const val = qcSchema(req.body);
+    if (!val.success) {
+      return validateResponse(res, val);
+    }
+    const { passed, notes } = val.data;
     const qc = await prisma.qCInspection.create({
       data: {
-        productionId: production_id,
+        productionId: Number(productionId),
         inspectorId: req.user.id,
         passed,
         notes,
@@ -17,52 +25,50 @@ export const createQC = async (req: any, res: Response) => {
 
     if (passed) {
       await prisma.productionOrder.update({
-        where: { id: production_id },
+        where: { id: Number(productionId) },
         data: { status: 'COMPLETED' },
       });
     }
 
     res.status(201).json({ success: false, message: qc });
   } catch (err: any) {
-    res.status(400).json({ success: false, message: err.message });
+    console.error(err);
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid reference number',
+      });
+    }
+    res.status(500).json({ success: false, message: err.message });
   }
 };
 
 export const exportQCReport = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { referenceNo } = req.params;
 
-    const order = await prisma.productionOrder.findUnique({
-      where: { id: Number(id) },
+    const order = await prisma.productionOrder.findFirst({
+      where: { referenceNo, status: 'COMPLETED' },
       include: {
         createdByUser: true,
-        qcInspections: { include: { inspectorUser: true } },
+        qcInspections: {
+          include: {
+            inspectorUser: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+              },
+            },
+          },
+        },
       },
     });
 
     if (!order) return res.status(404).json({ message: 'Not found' });
-
-    const doc = new PDFDocument();
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=qc_report_${order.referenceNo}.pdf`);
-    doc.pipe(res);
-
-    doc.fontSize(20).text('QC Inspection Report', { align: 'center' });
-    doc.moveDown();
-
-    doc.fontSize(12).text(`Reference No: ${order.referenceNo}`);
-    doc.text(`Model: ${order.modelName}`);
-    doc.text(`Quantity: ${order.quantity}`);
-    doc.text(`Status: ${order.status}`);
-    doc.text(`Created by: ${order.createdByUser?.name}`);
-    doc.moveDown();
-
-    doc.fontSize(14).text('Inspections:');
-    order.qcInspections.forEach((qc, i) => {
-      doc.fontSize(12).text(`${i + 1}. Inspector: ${qc.inspectorUser?.name} | Passed: ${qc.passed ? 'Yes' : 'No'} | Notes: ${qc.notes || '-'}`);
-    });
-
-    doc.end();
+    console.log(order);
+    generateQCReport(order, res);
   } catch (err: any) {
     res.status(500).json({ success: false, message: err.message });
   }
