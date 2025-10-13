@@ -6,7 +6,7 @@ export const registerSchema = (body: any) =>
       name: z.string().min(3, 'Name must be at least 3 characters long'),
       email: z.string().email('Invalid email'),
       password: z.string().min(6, 'Password must be at least 6 characters long').max(100, 'Password too long'),
-      role: z.enum(['QC', 'ADMIN', 'PACKING']),
+      role: z.enum(['QC', 'ADMIN', 'OPERATOR']),
     })
     .safeParse(body);
 export type registerType = z.infer<typeof registerSchema>;
