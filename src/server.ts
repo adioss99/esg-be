@@ -11,7 +11,7 @@ app.use(morgan('dev'));
 app.use(cookieparser());
 app.use(
   cors({
-    origin: ['http://localhost:3001', 'https://esg-fe.vercel.app/'],
+    origin: process.env.CLIENT_URL,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
   })
