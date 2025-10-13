@@ -38,21 +38,19 @@ export const login = async (req: Request, res: Response) => {
     });
 
     const envi = process.env.APP_ENV === 'production';
-    console.log(envi);
-    res
-      .status(200)
-      .cookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none',
-        maxAge: (envi ? 7 : 15) * 24 * 60 * 60 * 1000,
-      })
-      .json({
-        success: true,
-        data,
-        accessToken,
-        refreshToken,
-      });
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      maxAge: (envi ? 7 : 15) * 24 * 60 * 60 * 1000,
+    });
+    res.status(200).json({
+      success: true,
+      data,
+      accessToken,
+      refreshToken,
+    });
   } catch (error: string | any) {
     res.status(500).json({
       success: false,

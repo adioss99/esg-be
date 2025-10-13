@@ -13,6 +13,7 @@ app.use(
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     optionsSuccessStatus: 200,
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
 app.use(morgan('dev'));
