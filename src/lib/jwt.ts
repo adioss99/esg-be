@@ -10,13 +10,13 @@ export interface userPayLoad {
 export const generateToken = (user: userPayLoad): string => {
   const secret: string | undefined = String(process.env.JWT_ACCESS_SECRET);
   return jwt.sign(user, secret, {
-    expiresIn: process.env.APP_ENV === 'production' ? '5m' : '1h',
+    expiresIn: process.env.APP_ENV === 'production' ? '15m' : '1h',
   });
 };
 
 export const generateRefreshToken = (user: userPayLoad): string => {
   return jwt.sign(user, String(process.env.JWT_REFRESH_SECRET), {
-    expiresIn: process.env.APP_ENV === 'production' ? '1d' : '7d',
+    expiresIn: '7d',
   });
 };
 
