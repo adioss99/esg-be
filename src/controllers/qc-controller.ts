@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
-import PDFDocument from 'pdfkit';
 import { qcSchema } from '../validators/qc-validator';
 import { validateResponse } from '../utils/response';
 import { Prisma } from '@prisma/client';
@@ -9,11 +8,12 @@ import { generateQCReport } from '../lib/pdf';
 export const createQC = async (req: any, res: Response) => {
   try {
     const { productionId } = req.params;
-    const val = qcSchema(req.body);
+    let { passed, notes } = req.body;
+    passed = passed === 'true' ? true : false;
+    const val = qcSchema({ passed, notes });
     if (!val.success) {
       return validateResponse(res, val);
     }
-    const { passed, notes } = val.data;
     const prodId = Number(productionId);
     const existingInspection = await prisma.qCInspection.findFirst({
       where: {
@@ -25,6 +25,7 @@ export const createQC = async (req: any, res: Response) => {
     if (existingInspection) {
       return res.status(400).json({ sucess: false, message: 'QC record already approved.' });
     }
+
     const qc = await prisma.qCInspection.create({
       data: {
         productionId: prodId,
@@ -41,7 +42,7 @@ export const createQC = async (req: any, res: Response) => {
       });
     }
 
-    res.status(201).json({ success: false, message: qc });
+    res.status(201).json({ success: true, message: qc });
   } catch (err: any) {
     console.error(err);
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') {
