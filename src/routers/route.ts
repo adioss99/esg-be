@@ -1,7 +1,7 @@
 import { isAuth, isRole, verifyRToken } from '../middlewares/auth-middleware';
 
 import { getUsers, updateUser, registerUser } from '../controllers/admin-controller';
-import { createOrder, getOrders } from '../controllers/production-controller';
+import { createOrder, deleteOrder, getOrders, updateOrderStatus } from '../controllers/production-controller';
 import { login, refreshToken, logout } from '../controllers/auth-controller';
 import { Router } from 'express';
 
@@ -21,5 +21,7 @@ router.put('/user/:id', isAuth, isRole('ADMIN'), updateUser);
 
 router.get('/production-orders', isAuth, isRole('OPERATOR'), getOrders);
 router.post('/production-order', isAuth, isRole('OPERATOR'), createOrder);
+router.put('/production-order/:referenceNo', isAuth, isRole('OPERATOR'), updateOrderStatus);
+router.delete('/production-order/:referenceNo', isAuth, isRole('OPERATOR'), deleteOrder);
 
 export default router;

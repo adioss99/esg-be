@@ -8,3 +8,11 @@ export const productSchema = (body: any) =>
     })
     .safeParse(body);
 export type productSchemaType = z.infer<typeof productSchema>;
+
+export const productStatusSchema = (body: any) =>
+  z
+    .object({
+      status: z.enum(['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']),
+    })
+    .safeParse(body);
+export type productStatusSchemaType = z.infer<typeof productStatusSchema>;

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
-import { productSchema } from '../validators/product-validator';
+import { productSchema, productStatusSchema } from '../validators/product-validator';
+import { Prisma } from '@prisma/client';
 
 export const createOrder = async (req: Request, res: Response) => {
   try {
@@ -46,25 +47,49 @@ export const getOrders = async (_: Request, res: Response) => {
 
 export const updateOrderStatus = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const { status } = req.body;
+    const { referenceNo } = req.params;
+    const val = productStatusSchema(req.body);
+    if (!val.success) {
+      return res.status(400).json({
+        success: false,
+        message: val.error.issues.map((err) => ({
+          path: err.path.join('.'),
+          message: err.message,
+        })),
+      });
+    }
+
+    const { status } = val.data;
 
     const order = await prisma.productionOrder.update({
-      where: { id: Number(id) },
+      where: { referenceNo },
       data: { status },
     });
     res.status(200).json({ success: true, data: order });
   } catch (err: any) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid reference number',
+      });
+    }
+
     res.status(400).json({ success: false, message: err.message });
   }
 };
 
 export const deleteOrder = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    await prisma.productionOrder.delete({ where: { id: Number(id) } });
+    const { referenceNo } = req.params;
+    await prisma.productionOrder.delete({ where: { referenceNo, status: 'PENDING' } });
     res.json({ success: true, message: 'Order deleted' });
   } catch (err: any) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid reference number',
+      });
+    }
     res.status(400).json({ success: false, message: err.message });
   }
 };
