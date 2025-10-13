@@ -1,15 +1,27 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
+import { productSchema } from '../validators/product-validator';
 
-export const createOrder = async (req: any, res: Response) => {
+export const createOrder = async (req: Request, res: Response) => {
   try {
-    const { model_name, quantity } = req.body;
-    const reference_no = 'PO' + Date.now();
+    const val = productSchema(req.body);
+    if (!val.success) {
+      return res.status(400).json({
+        success: false,
+        message: val.error.issues.map((err) => ({
+          path: err.path.join('.'),
+          message: err.message,
+        })),
+      });
+    }
+
+    const { modelName, quantity } = val.data;
+    const referenceNo = 'PO' + Date.now();
 
     const order = await prisma.productionOrder.create({
       data: {
-        referenceNo: reference_no,
-        modelName: model_name,
+        referenceNo,
+        modelName,
         quantity,
         status: 'PENDING',
         createdBy: req.user.id,
@@ -24,7 +36,7 @@ export const createOrder = async (req: any, res: Response) => {
 export const getOrders = async (_: Request, res: Response) => {
   try {
     const orders = await prisma.productionOrder.findMany({
-      include: { createdByUser: true },
+      include: { createdByUser: { select: { name: true, email: true, role: true } } },
     });
     res.status(200).json({ success: true, data: orders });
   } catch (err: any) {
