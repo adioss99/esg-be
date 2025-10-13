@@ -37,7 +37,7 @@ export const getOrders = async (_req: Request, res: Response) => {
         qcInspections: { select: { id: true, passed: true }, orderBy: { createdAt: 'asc' }, take: 1 },
       },
     });
-    console.log(orders);
+
     res.status(200).json({ success: true, data: orders });
   } catch (err: any) {
     res.status(500).json({ success: false, message: err.message });
