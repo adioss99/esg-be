@@ -38,19 +38,20 @@ export const login = async (req: Request, res: Response) => {
     });
 
     const envi = process.env.APP_ENV === 'production';
-
+    console.log(envi);
     res
       .status(200)
       .cookie('refreshToken', refreshToken, {
         httpOnly: true,
         secure: envi,
-        sameSite: 'lax',
-        maxAge: (envi ? 2 : 7) * 24 * 60 * 60 * 1000,
+        sameSite: envi ? 'none' : 'lax',
+        maxAge: (envi ? 7 : 15) * 24 * 60 * 60 * 1000,
       })
       .json({
         success: true,
         data,
         accessToken,
+        refreshToken,
       });
   } catch (error: string | any) {
     res.status(500).json({
