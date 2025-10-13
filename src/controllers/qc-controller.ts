@@ -14,9 +14,20 @@ export const createQC = async (req: any, res: Response) => {
       return validateResponse(res, val);
     }
     const { passed, notes } = val.data;
+    const prodId = Number(productionId);
+    const existingInspection = await prisma.qCInspection.findFirst({
+      where: {
+        productionId: prodId,
+        passed: true,
+      },
+    });
+
+    if (existingInspection) {
+      return res.status(400).json({ sucess: false, message: 'QC record already approved.' });
+    }
     const qc = await prisma.qCInspection.create({
       data: {
-        productionId: Number(productionId),
+        productionId: prodId,
         inspectorId: req.user.id,
         passed,
         notes,
@@ -25,7 +36,7 @@ export const createQC = async (req: any, res: Response) => {
 
     if (passed) {
       await prisma.productionOrder.update({
-        where: { id: Number(productionId) },
+        where: { id: prodId },
         data: { status: 'COMPLETED' },
       });
     }
@@ -67,7 +78,6 @@ export const exportQCReport = async (req: Request, res: Response) => {
     });
 
     if (!order) return res.status(404).json({ message: 'Not found' });
-    console.log(order);
     generateQCReport(order, res);
   } catch (err: any) {
     res.status(500).json({ success: false, message: err.message });
