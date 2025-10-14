@@ -49,7 +49,7 @@ export const getOrderDetails = async (req: Request, res: Response) => {
     const { referenceNo } = req.params;
 
     const order = await prisma.productionOrder.findFirst({
-      where: { referenceNo, status: 'COMPLETED' },
+      where: { referenceNo },
       include: {
         createdByUser: {
           select: { id: true, name: true, email: true, role: true },
