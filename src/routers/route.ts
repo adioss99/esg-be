@@ -21,8 +21,9 @@ router.post('/register', isAuth, isRole('ADMIN'), registerUser);
 router.get('/users', isAuth, isRole('ADMIN'), getUsers);
 router.put('/user/:id', isAuth, isRole('ADMIN'), updateUser);
 
-router.get('/production-orders', isAuth, isRole('OPERATOR', 'QC'), getOrders);
-router.get('/production-order/:referenceNo', isAuth, isRole('OPERATOR', 'QC'), getOrderDetails);
+router.get('/production-orders', isAuth, getOrders);
+router.get('/production-order/:referenceNo', isAuth, getOrderDetails);
+
 router.post('/production-order', isAuth, isRole('OPERATOR'), createOrder);
 router.put('/production-order/:referenceNo', isAuth, isRole('OPERATOR'), updateOrderStatus);
 router.delete('/production-order/:referenceNo', isAuth, isRole('OPERATOR'), deleteOrder);
