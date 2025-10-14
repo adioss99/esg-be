@@ -34,8 +34,9 @@ export const getOrders = async (_req: Request, res: Response) => {
     const orders = await prisma.productionOrder.findMany({
       include: {
         createdByUser: { select: { name: true, email: true, role: true } },
-        qcInspections: { select: { id: true, passed: true }, orderBy: { createdAt: 'asc' }, take: 1 },
+        qcInspections: { select: { id: true, passed: true }, orderBy: { createdAt: 'desc' }, take: 1 },
       },
+      orderBy: { createdAt: 'desc' },
     });
 
     res.status(200).json({ success: true, data: orders });
