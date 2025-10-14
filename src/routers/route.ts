@@ -5,6 +5,7 @@ import { getUsers, updateUser, registerUser } from '../controllers/admin-control
 import { createOrder, deleteOrder, getOrders, updateOrderStatus } from '../controllers/production-controller';
 import { createQC, exportQCReport } from '../controllers/qc-controller';
 import { Router } from 'express';
+import { getQcInspection, getTotalProduct, getTotalUser } from '../controllers/dashboard-controller';
 
 const router = Router();
 
@@ -27,5 +28,9 @@ router.delete('/production-order/:referenceNo', isAuth, isRole('OPERATOR'), dele
 
 router.post('/qc-report/:productionId', isAuth, isRole('QC'), createQC);
 router.get('/qc-report/:referenceNo', isAuth, isRole('QC'), exportQCReport);
+
+router.get('/dashboard/product', isAuth, getTotalProduct);
+router.get('/dashboard/qc', isAuth, getQcInspection);
+router.get('/dashboard/user', isAuth, isRole('ADMIN'), getTotalUser);
 
 export default router;
