@@ -44,6 +44,38 @@ export const getOrders = async (_req: Request, res: Response) => {
   }
 };
 
+export const getOrderDetails = async (req: Request, res: Response) => {
+  try {
+    const { referenceNo } = req.params;
+
+    const order = await prisma.productionOrder.findFirst({
+      where: { referenceNo, status: 'COMPLETED' },
+      include: {
+        createdByUser: {
+          select: { id: true, name: true, email: true, role: true },
+        },
+        qcInspections: {
+          include: {
+            inspectorUser: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!order) return res.status(404).json({ message: 'Not found' });
+    res.status(200).json({ success: true, data: order });
+  } catch (err: any) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 export const updateOrderStatus = async (req: Request, res: Response) => {
   try {
     const { referenceNo } = req.params;
