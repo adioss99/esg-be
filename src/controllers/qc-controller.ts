@@ -66,7 +66,7 @@ export const exportQCReport = async (req: Request, res: Response) => {
     const { referenceNo } = req.params;
 
     const order = await prisma.productionOrder.findFirst({
-      where: { referenceNo, status: 'COMPLETED' },
+      where: { referenceNo },
       include: {
         createdByUser: true,
         qcInspections: {
@@ -85,7 +85,7 @@ export const exportQCReport = async (req: Request, res: Response) => {
       },
     });
 
-    if (!order) return res.status(404).json({ message: 'Not found' });
+    if (!order) return res.status(404).json({ sucess: false, message: 'Not found' });
     generateQCReport(order, res);
   } catch (err: any) {
     res.status(500).json({ success: false, message: err.message });
