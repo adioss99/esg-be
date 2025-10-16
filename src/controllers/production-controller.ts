@@ -56,6 +56,7 @@ export const getOrderDetails = async (req: Request, res: Response) => {
           select: { id: true, name: true, email: true, role: true },
         },
         qcInspections: {
+          orderBy: { createdAt: 'asc' },
           include: {
             inspectorUser: {
               select: {

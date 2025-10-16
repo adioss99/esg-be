@@ -19,6 +19,12 @@ export const createQC = async (req: any, res: Response) => {
       where: {
         productionId: prodId,
         passed: true,
+        production: {
+          status: { not: 'COMPLETED' },
+        },
+      },
+      include: {
+        production: true,
       },
     });
 
@@ -64,6 +70,7 @@ export const exportQCReport = async (req: Request, res: Response) => {
       include: {
         createdByUser: true,
         qcInspections: {
+          orderBy: { createdAt: 'asc' },
           include: {
             inspectorUser: {
               select: {
