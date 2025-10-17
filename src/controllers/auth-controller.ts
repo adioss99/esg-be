@@ -3,18 +3,13 @@ import prisma from '../lib/prisma';
 import { comparePassword } from '../lib/bcrypt';
 import { generateRefreshToken, generateToken } from '../lib/jwt';
 import { loginValidationSchema } from '../validators/user-validator';
+import { validateResponse } from '../utils/response';
 
 export const login = async (req: Request, res: Response) => {
   try {
     const val = loginValidationSchema(req.body);
     if (!val.success) {
-      return res.status(400).json({
-        success: false,
-        message: val.error.issues.map((err) => ({
-          path: err.path.join('.'),
-          message: err.message,
-        })),
-      });
+      return validateResponse(res, val);
     }
     const { email, password } = val.data;
 
@@ -37,19 +32,17 @@ export const login = async (req: Request, res: Response) => {
       select: { id: true, name: true, email: true, role: true },
     });
 
-    const envi = process.env.APP_ENV === 'production';
-
+    const isProduction = process.env.IS_PRODUCTION === 'true';
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: envi,
-      sameSite: envi ? 'none' : 'lax',
-      maxAge: (envi ? 7 : 15) * 24 * 60 * 60 * 1000,
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax',
+      maxAge: (isProduction ? 7 : 15) * 24 * 60 * 60 * 1000,
     });
     res.status(200).json({
       success: true,
       data,
       accessToken,
-      refreshToken,
     });
   } catch (error: string | any) {
     res.status(500).json({

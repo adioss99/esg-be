@@ -8,15 +8,16 @@ export interface userPayLoad {
 }
 
 export const generateToken = (user: userPayLoad): string => {
-  const secret: string | undefined = String(process.env.JWT_ACCESS_SECRET);
-  return jwt.sign(user, secret, {
-    expiresIn: '1d',
+  const isProduction = process.env.IS_PRODUCTION === 'true';
+  return jwt.sign(user, String(process.env.JWT_ACCESS_SECRET), {
+    expiresIn: isProduction ? '10m' : '1h',
   });
 };
 
 export const generateRefreshToken = (user: userPayLoad): string => {
+  const isProduction = process.env.IS_PRODUCTION === 'true';
   return jwt.sign(user, String(process.env.JWT_REFRESH_SECRET), {
-    expiresIn: '7d',
+    expiresIn: isProduction ? '7d' : '15d',
   });
 };
 
