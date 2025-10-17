@@ -10,10 +10,11 @@ import { getQcInspection, getTotalProduct, getTotalUser } from '../controllers/d
 const router = Router();
 
 router.get('/', (_req, res) => {
+  const isProduction = process.env.IS_PRODUCTION === 'true';
   res.status(200).json({
     success: true,
     message: 'Api ready!',
-    prod: process.env.IS_PRODUCTION,
+    prod: isProduction,
   });
 });
 
