@@ -43,6 +43,7 @@ export const login = async (req: Request, res: Response) => {
       success: true,
       data,
       accessToken,
+      refreshToken,
     });
   } catch (error: string | any) {
     res.status(500).json({
