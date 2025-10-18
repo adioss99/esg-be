@@ -32,7 +32,7 @@ export const verifyRToken = (req: Request, res: Response, next: NextFunction) =>
   if (!userPayload) {
     return res.status(401).json({ success: false, message: 'Token invalid' });
   }
-  req.user = userPayload;
+  req.user = { ...(userPayload as Record<string, unknown>), refreshToken: token };
   next();
 };
 

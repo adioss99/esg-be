@@ -58,9 +58,9 @@ export const refreshToken = async (req: Request, res: Response) => {
   try {
     const cookies = req.user;
     const user = await prisma.user.findFirst({
-      where: { id: cookies.id },
+      where: { id: cookies.id, refreshToken: cookies.refreshToken },
     });
-
+    console.log(user);
     if (!user) return res.status(400).json({ success: false, message: 'Refresh token not found' });
 
     const accessToken = generateToken({
@@ -82,6 +82,7 @@ export const refreshToken = async (req: Request, res: Response) => {
 export const logout = async (req: Request, res: Response) => {
   try {
     const user = req.user;
+    console.log(user.id);
     await prisma.user.update({
       where: { id: user.id },
       data: { refreshToken: '' },
